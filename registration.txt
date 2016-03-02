@@ -1,0 +1,483 @@
+  ---- Registrion-----
+<div >
+ <form name="frm" class="form-horizontal"  role="form" novalidate   >
+    <h3>
+       {{PageName}}
+    </h3>
+    <div class="form-horizontal from-Group" align="right" >
+        <div align="right" ng-messages="frm.instName.$error" ng-if="frm.instName.$touched" >
+        <p ng-message="required" class= >Institute Name Should not be Blank.</p>
+         </div>
+         <div>
+         &nbsp;
+         </div>
+    </div>
+
+    <div class="form-group" ng-class="{ 'has-error' :frm.instName.$invalid && frm.instName.$touched}">
+        <div class="control-label col-md-2" >Institute Name : </div>
+        <div class= "col-md-3"><input class="form-control" type="text" placeholder='Institute Name' name="instName" ng-model="Inst.InstName" ng-maxlength="7" ng-minlength="5" required="required" />
+         <p ng-show="frm.instName.$invalid" class="help-block">Institute should not be balnk.</p>
+         <p ng-show="frm.instName.$error.minlength " class="help-block">Institute Name Is Too Short.</p>
+         <p ng-show="frm.instName.$error.maxlength " class="help-block">Institute Name Is Too long.</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <div><label class="col-md-2 control-label" for="radios">Intitute For : </label></div>
+        <div class="col-md-3"> 
+        <label class="radio-inline" for="radios-0">
+        <input type="radio" name="rdInstType" id="rdInstType-0" value="Co-education" checked="checked" ng-model="Inst.InstType">
+        Co-education
+        </label> 
+        <label class="radio-inline" for="radios-1">
+        <input type="radio" name="rdInstType" id="rdInstType-1" value="Girls" ng-model="Inst.InstType">
+        girls
+        </label>
+         <label class="radio-inline" for="radios-1">
+        <input type="radio" name="rdInstType" id="Radio1" value="Boyes" ng-model="Inst.InstType">
+        Boyes
+        </label>
+        </div>
+    </div>
+        
+        <div class="form-group">
+        <div><label class="col-md-2 control-label" for="radios">Recognize as Reserch Center : </label></div>
+        <div class="col-md-3"> 
+        <label class="radio-inline" for="radios-0">
+        <input type="checkbox" name="rcbInstResearche" id="Radio2" value="Yes" checked="checked" ng-model="Inst.isReserch">
+        Yes </label>
+        </div>
+    </div>
+
+     <div class="form-group">
+        <div class="control-label col-md-2">Institute Address : </div>
+        <div class= "col-md-3"><input class="form-control" type="text" placeholder='Institute Adress' name="instAddress" ng-model="Inst.Address.InstAddress" /> </div>
+    </div>
+    <div class="form-group">
+        <div class="control-label col-md-2">Country : </div>
+        <div class= "col-md-3"><select  name ="ddlContry" class="form-cntrol" ng-model="Inst.Address.Country" ng-options="contry as contry.Country_Description for contry in dbContryList|filter:{Country_Description:'India'}:true track by country.pk_Country_ID" required> <option value="" selected>---- Select ----</option></select> </div>
+    </div>
+
+    <div class="form-group">
+       <div class="cotrol-lable col-md-2"> State :</div>
+       <div class="col-md-3"><select name="ddlstate" ng-disabled="!Inst.Address.Country" ng-model="Inst.Address.State" 
+       ng-options="state as state.State_Name for state in stateListdb|filter:{Country_ID:Inst.Address.Country.pk_Country_ID}:true  track by state.State_ID"><option value="" selected>---- Select ----</option></select></div>
+       
+    </div>
+    
+    <div class="form-group">
+    <div class="control-lable col-md-2">District :</div>
+    <div class="col-md-3"><select name="ddlDistrict" ng-disabled="!Inst.Address.State" ng-model="Inst.Address.District" ng-options="district as district.District_Name for district in districtListdb|filter:{State_ID:Inst.Address.State.State_ID}:true track by district.District_ID"><option value="" selected>--- Select ----</option></select></div>
+
+    </div>
+    
+    <div class="form-group">
+     
+        <div class= "col-md-3">
+
+         <button type="submit" name="btnSubmit" class="btn btn-success" ng-click="saveinst(Inst)"> {{btnName}} </button>
+
+         </div>
+    </div>
+    
+    </form >
+</div>
+
+----- Registration Controler
+
+
+app.controller('instctrl', function ($scope, instFac, masterFactory, $routeParams, $rootScope) {
+
+    $scope.dbContryList = [];
+
+    $scope.contryListdb = function () {
+        masterFactory.getCountry().success(function (data) {
+
+            console.log(data);
+
+
+            $scope.dbContryList = angular.fromJson(data.d)
+            $scope.success = true;
+        });
+    };
+
+     $scope.contryListdb();
+
+    $scope.PageName = "Institute Master";
+    $scope.contryList = countryList;
+
+
+    $scope.stateList = function () {
+        masterFactory.getState().success(function (data) {
+            $scope.stateListdb = angular.fromJson(data.d)
+            $scope.success = true;
+
+        });
+    };
+
+    $scope.districtList = function () {
+        masterFactory.getDistrict().success(function (data) {
+
+            $scope.districtListdb = angular.fromJson(data.d)
+            $scope.success = true;
+
+        })
+
+    };
+
+    $scope.saveinst = function () {
+
+        if ($routeParams.sid == null || $routeParams.sid == '') {
+
+
+
+            instFac.saveInst($scope.Inst).success(function (data) {
+                window.location = "http://localhost:32566/Views/StudentRegistration.aspx#/instlist"
+                $scope.success = true;
+            });
+        }
+        else // update institute
+        {
+            instFac.editInstitute($scope.Inst).success(function (data) {
+                window.location = "http://localhost:32566/Views/StudentRegistration.aspx#/instlist"
+                $scope.success = true;
+            });
+        }
+    };
+
+    $scope.displayInst = function () {
+
+        if ($routeParams.sid == null || $routeParams.sid == '') {
+            $scope.PageName = "Institute Master";
+            $scope.btnName = "Save";
+            $scope.Inst = {};
+
+        }
+        else {
+            instFac.getInstituteByID($routeParams.sid).success(function (data) {
+                $scope.Inst = angular.fromJson(data.d)[0]
+                $scope.PageName = "Update Institute: " + $scope.Inst.InstName.toString();
+                $scope.btnName = "Update";
+                $scope.success = true;
+            })
+
+        }
+
+    };
+
+
+
+    $scope.displayInst();
+
+    $scope.stateList();
+    $scope.districtList();
+});
+
+
+---------------------- Registration Factory
+
+app.factory('instFac', function ($http) {
+    var institute = {};
+
+    institute.saveInst = function (Inst) {
+        return $http({
+            url: "StudentRegistration.aspx/saveInst",
+            method: "POST",
+            data: { InstObj: angular.toJson(Inst) }
+        })
+    };
+
+
+    institute.getallInst = function () {
+        return $http({
+            url: "StudentRegistration.aspx/getAllInstitute",
+            method: "GET",
+            data: {},
+            headers: { "Content-Type": "application/json" }
+        })
+
+    };
+    institute.getInstituteByID = function (sid) {
+
+        return $http({
+            url: "StudentRegistration.aspx/findInstituteById",
+            method: 'POST',
+            data: { sid: sid }
+        })
+    };
+    institute.editInstitute = function (Institute) {
+       
+        return $http({
+            url: "StudentRegistration.aspx/editInst",
+            method: 'POST',
+            data: { InstObj: angular.toJson(Institute) }
+        })
+    };
+    institute.deleteInst = function (sid) {       
+       return $http({
+            url: "StudentRegistration.aspx/delInstitute",
+            method: "POST",
+            data: { sid: sid }
+        })
+    };
+
+    return institute;
+});
+
+
+--------------------------------  WebMethod
+
+ public partial class StudentRegistration : System.Web.UI.Page
+    {
+        #region Private Variables
+        static DbUtility oDAL = new DbUtility();
+        static string sResult = string.Empty;
+        #endregion
+
+        [WebMethod]
+        public static bool saveStudent(string StudentObj)
+        {
+            return oDAL.SaveDocument(StudentObj, "Student");
+
+        }
+
+        [WebMethod]
+        [ScriptMethod(UseHttpGet = true)]
+        public static string getAllStudent()
+        {
+            return oDAL.GetAllDocumentsWithObjectId("Student");
+        }
+
+
+        [WebMethod]
+        public static bool delete(string sid)
+        {
+            return oDAL.DeleteDocumentByObjectId("Student", ObjectId.Parse(sid));
+        }
+
+
+        
+
+        [WebMethod]
+        public static string findStudentById(string sid)
+        {
+            return oDAL.GetDocumentByIdWithObjectId("Student", "_id", ObjectId.Parse(sid));
+        }
+
+        //--------------------- Masters--------------///
+
+        [WebMethod]
+        [ScriptMethod(UseHttpGet = true)]
+        public static string getContry()
+        {
+            return oDAL.GetAllDocumentsWithObjectId("Country");
+        }
+        [WebMethod]
+        [ScriptMethod(UseHttpGet = true)]
+        public static string getState()
+        {
+            return oDAL.GetAllDocuments("State");
+        }
+        [WebMethod]
+        [ScriptMethod(UseHttpGet = true)]
+        public static string getDistrict()
+        {
+            System.Diagnostics.Debugger.Launch();
+            return oDAL.GetAllDocuments("District");
+        }
+        // ----   INSTitute -------///
+
+        [WebMethod]
+        [ScriptMethod(UseHttpGet = true)]
+        public static string getAllInstitute()
+        {
+            return oDAL.GetAllDocumentsWithObjectId("Institute");
+
+        }
+
+        [WebMethod]
+        public static bool saveInst(string InstObj)
+        {
+            return oDAL.SaveDocument( InstObj, "Institute");
+        }
+        [WebMethod]
+        public static bool editInst(string InstObj)
+        {
+            return oDAL.UpdateDocumentByObjectId(InstObj, "Institute");
+        }
+        [WebMethod]
+        public static string findInstituteById(string sid)
+        {
+            return oDAL.GetDocumentByIdWithObjectId( "Institute","_id", ObjectId.Parse(sid));
+        }
+
+        [WebMethod]
+        public static bool updateInstitute(string Instobj)
+        {
+            return oDAL.UpdateDocumentByObjectId(Instobj, "Institute");
+
+        }
+        [WebMethod]
+        public static bool editStudent(string StudentObj)
+        {
+            return oDAL.UpdateDocumentByObjectId(StudentObj, "Student");
+
+        }
+
+        [WebMethod]
+        public static bool delInstitute(string sid)
+        {
+            return oDAL.DeleteDocumentByObjectId("Institute", ObjectId.Parse(sid));
+        }
+    }
+}
+----------------- ROUTE
+
+app.config(function ($routeProvider) {
+    $routeProvider
+     .when('/Add', {
+         templateUrl: '/Views/Add.html',
+         controller: 'studCtrl'
+
+     })
+    $routeProvider
+     .when('/List', {
+         templateUrl: '/Views/List.html',
+         controller: 'listCtrl'
+     })
+
+     .when('/Add/:sid', {
+         templateUrl: '/Views/Add.html',
+         controller: 'studCtrl'
+     })
+     .when('/instReg', {
+         templateUrl: '/Views/insttituteRegistration.html',
+         controller: 'instctrl'
+     })
+     .when('/instReg/:sid', {
+         templateUrl: '/Views/insttituteRegistration.html',
+         controller: 'instctrl'
+     })
+     .when('/instlist', {
+         templateUrl: '/Views/insttituteList.html',
+         controller: 'instlistCtrl'
+     })
+     .otherwise({
+         redirectTo: '/List'
+         //         templateUrl: '/Views/insttituteRegistration.html'
+     });
+});
+----------------- APP
+
+var app = angular.module('myApp', ['checklist-model','ngMessages','ngRoute']);
+
+
+-------------------- LIST
+
+<div>
+    <div class="page-header">
+        <h1>
+            List of Students</h1>
+    </div>
+    <div class="form-group">
+        <div ng-show="showMessage" class="alert alert-success">{{message}}</div>
+        <div style="align: right">
+        </div>
+        <div>
+        <p><b>Filter : </b><input type="text" ng-model="test"></p>
+        </div>
+
+        <table class="table table-bordered table-hover" ng-show="studentinDb.length > 0">
+            <thead>
+                <tr>
+                    <th ng-click="orderByMe('fname')" style="cursor:pointer">
+                        <b>First Name</b>
+                    </th> 
+                    <th ng-click="orderByMe('lname')" style="cursor:pointer">
+                        <b>Last Name</b>
+                    </th>
+                    <th>
+                        <b>Birth date</b>
+                    </th>
+                    <th>
+                        <b>Gender</b>
+                     </th>
+                    <th>
+                        <b>Address</b>
+                    </th>
+                    <th>
+                        <b>Edit</b>
+                    </th>
+                    <th >
+                        <b>Delete</b>
+                    </th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="stud in studentinDb | filter : test| orderBy:myOrderBy:sortOrder  ">
+                    <td>
+                        {{stud.fname}}
+                    </td>
+                    <td>
+                        {{stud.lname}}
+                    </td>
+                    <td>
+                         {{stud.bday| date : 'dd/MM/yyyy'}}
+                    </td>
+                     <td>
+                        {{stud.gender}}
+                    </td>
+                    <td>
+                        {{stud.address.firstline}} {{stud.address.district.District_Name}} {{stud.address.state.State_Desc}}
+                        {{stud.address.country.Country_Description}}
+                    </td>
+                    
+                    <td >                    
+                        <a href="#Add/{{stud._id.$oid}}" >
+                        Edit
+                        </a>
+                    </td>
+
+                    <td style="cursor:pointer" >                    
+                        <a ng-click="fnDelete(stud._id.$oid)" >
+                        Delete
+                        </a>
+                    </td>
+                    
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+------------------ LIst Controller
+
+app.controller('instlistCtrl', function ($scope, instFac, $routeParams) {
+
+    $scope.getallInst = function () {
+
+        instFac.getallInst().success(function (data) {
+            $scope.instInDb = JSON.parse(data.d)
+            $scope.success = true;
+        })
+    };
+
+    $scope.delInstitute = function (sid) {
+
+        instFac.deleteInst(sid).success(function (data) {
+            if (data.d == true) {
+                $scope.getallInst();
+            }
+
+        })
+
+    };
+    $scope.sortOrder = false;
+    $scope.orderByMe = function (x) {
+        $scope.myOrderBy = x;
+        $scope.sortOrder = !$scope.sortOrder;
+    };
+
+    $scope.getallInst();
+
+});
